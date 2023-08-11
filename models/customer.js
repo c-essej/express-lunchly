@@ -92,12 +92,14 @@ class Customer {
    /** get top ten customers. */
 
   static async getTopTen(){
+    console.log('we got here');
     const results = await db.query(
       `SELECT c.id,
           c.first_name AS "firstName",
           c.last_name  AS "lastName",
           c.phone,
-          c.notes
+          c.notes,
+          COUNT(*)
         FROM customers as c
         JOIN reservations as r
         ON c.id = r.customer_id
@@ -105,7 +107,7 @@ class Customer {
         ORDER BY COUNT(*) DESC
         LIMIT 10`,
     );
-
+    console.log('the result is=', results);
     return results.rows.map(c => new Customer(c));
   }
 

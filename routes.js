@@ -56,6 +56,17 @@ router.post("/add/", async function (req, res, next) {
   return res.redirect(`/${customer.id}/`);
 });
 
+/** Get list of top ten Customers. */
+
+router.get("/top-ten/", async function(req, res, next){
+  console.log('we are in topTen');
+  const customers = await Customer.getTopTen();
+
+  console.log("list of customers=", customers);
+
+  return res.render('customer_top_ten.html', { customers });
+});
+
 /** Show a customer, given their ID. */
 
 router.get("/:id/", async function (req, res, next) {
@@ -112,15 +123,7 @@ router.post("/:id/add-reservation/", async function (req, res, next) {
   return res.redirect(`/${customerId}/`);
 });
 
-/** Get list of top ten Customers. */
 
-router.get("/top-ten/", async function(req, res, next){
-  const customers = await Customer.getTopTen();
-
-  console.log("list of customers=", customers);
-
-  return res.render('customer_top_ten.html', { customers });
-});
 
 
 module.exports = router;
