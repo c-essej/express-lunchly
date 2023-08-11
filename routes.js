@@ -4,7 +4,7 @@
 
 const express = require("express");
 
-const { BadRequestError } = require("./expressError");
+const { BadRequestError, NotFoundError } = require("./expressError");
 const Customer = require("./models/customer");
 const Reservation = require("./models/reservation");
 
@@ -20,7 +20,11 @@ router.get("/", async function (req, res, next) {
   if (req.query.search){
     const query = req.query.search;
     console.log('****req.query.search', query);
+    console.log("type is=", (typeof query));
+
     customers = await Customer.search(query);
+
+    console.log("customers when no customer=", customers);
 
     return res.render("customer_list.html", { customers });
 
@@ -107,5 +111,16 @@ router.post("/:id/add-reservation/", async function (req, res, next) {
 
   return res.redirect(`/${customerId}/`);
 });
+
+/** Get list of top ten Customers. */
+
+router.get("/top-ten/", async function(req, res, next){
+  const customers = await Customer.getTopTen();
+
+  console.log("list of customers=", customers);
+
+  return res.render('customer_top_ten.html', { customers });
+});
+
 
 module.exports = router;

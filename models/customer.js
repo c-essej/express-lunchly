@@ -20,7 +20,7 @@ class Customer {
 
   static async all() {
     const results = await db.query(
-          `SELECT id,
+      `SELECT id,
                   first_name AS "firstName",
                   last_name  AS "lastName",
                   phone,
@@ -31,24 +31,14 @@ class Customer {
     return results.rows.map(c => new Customer(c));
   }
 
-  /** */
+  /** search for customers */
 
-  static async search(query){
+  static async search(query) {
     let results;
-    if (query.length === 1){
 
-      results = await db.query(
+    const nameSplit = query.split(" ");
 
-        `SELECT id,
-                first_name AS "firstName",
-                last_name  AS "lastName",
-                phone,
-                notes
-          FROM customers
-          WHERE customers.first_name = $1
-          OR customers.last_name = $1`, [query])
-    } else if (query.length === 2){
-
+    if (nameSplit.length === 1) {
       results = await db.query(
         `SELECT id,
                 first_name AS "firstName",
@@ -56,24 +46,35 @@ class Customer {
                 phone,
                 notes
           FROM customers
-          WHERE customers.first_name = $1
-          AND customers.last_name = $2`, [query[0], query[1]])
+          WHERE LOWER(customers.first_name) = LOWER($1)
+          OR LOWER(customers.last_name) = LOWER($1)`, [query]);
+    } else if (nameSplit.length === 2) {
+      results = await db.query(
+        `SELECT id,
+                first_name AS "firstName",
+                last_name  AS "lastName",
+                phone,
+                notes
+          FROM customers
+          WHERE LOWER(customers.first_name) = LOWER($1)
+          AND LOWER(customers.last_name) = LOWER($2)`, [nameSplit[0], nameSplit[1]]);
     }
 
     return results.rows.map(c => new Customer(c));
   }
+
   /** get a customer by ID. */
 
   static async get(id) {
     const results = await db.query(
-          `SELECT id,
+      `SELECT id,
                   first_name AS "firstName",
                   last_name  AS "lastName",
                   phone,
                   notes
            FROM customers
            WHERE id = $1`,
-        [id],
+      [id],
     );
 
     const customer = results.rows[0];
@@ -85,6 +86,27 @@ class Customer {
     }
 
     return new Customer(customer);
+  }
+
+
+   /** get top ten customers. */
+
+  static async getTopTen(){
+    const results = await db.query(
+      `SELECT c.id,
+          c.first_name AS "firstName",
+          c.last_name  AS "lastName",
+          c.phone,
+          c.notes
+        FROM customers as c
+        JOIN reservations as r
+        ON c.id = r.customer_id
+        GROUP BY c.id
+        ORDER BY COUNT(*) DESC
+        LIMIT 10`,
+    );
+
+    return results.rows.map(c => new Customer(c));
   }
 
   /** get all reservations for this customer. */
@@ -104,26 +126,26 @@ class Customer {
   async save() {
     if (this.id === undefined) {
       const result = await db.query(
-            `INSERT INTO customers (first_name, last_name, phone, notes)
+        `INSERT INTO customers (first_name, last_name, phone, notes)
              VALUES ($1, $2, $3, $4)
              RETURNING id`,
-          [this.firstName, this.lastName, this.phone, this.notes],
+        [this.firstName, this.lastName, this.phone, this.notes],
       );
       this.id = result.rows[0].id;
     } else {
       await db.query(
-            `UPDATE customers
+        `UPDATE customers
              SET first_name=$1,
                  last_name=$2,
                  phone=$3,
                  notes=$4
              WHERE id = $5`, [
-            this.firstName,
-            this.lastName,
-            this.phone,
-            this.notes,
-            this.id,
-          ],
+        this.firstName,
+        this.lastName,
+        this.phone,
+        this.notes,
+        this.id,
+      ],
       );
     }
   }
