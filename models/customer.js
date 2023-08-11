@@ -39,7 +39,7 @@ class Customer {
     const nameSplit = query.split(" ");
 
     if (nameSplit.length === 1) {
-      let text = `%${query}%`;
+      let name = `%${query}%`;
 
       results = await db.query(
         `SELECT id,
@@ -50,8 +50,10 @@ class Customer {
           FROM customers
           WHERE customers.first_name ILIKE $1
           OR customers.last_name ILIKE $1`,
-        [text]);
+        [name]);
+
     } else if (nameSplit.length === 2) {
+
       let firstName = `%${nameSplit[0]}%`;
       let lastName = `%${nameSplit[1]}%`;
 
