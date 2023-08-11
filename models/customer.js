@@ -39,6 +39,8 @@ class Customer {
     const nameSplit = query.split(" ");
 
     if (nameSplit.length === 1) {
+      let text = `%${query}%`;
+
       results = await db.query(
         `SELECT id,
                 first_name AS "firstName",
@@ -46,9 +48,13 @@ class Customer {
                 phone,
                 notes
           FROM customers
-          WHERE LOWER(customers.first_name) = LOWER($1)
-          OR LOWER(customers.last_name) = LOWER($1)`, [query]);
+          WHERE customers.first_name ILIKE $1
+          OR customers.last_name ILIKE $1`,
+        [text]);
     } else if (nameSplit.length === 2) {
+      let firstName = `%${nameSplit[0]}%`;
+      let lastName = `%${nameSplit[1]}%`;
+
       results = await db.query(
         `SELECT id,
                 first_name AS "firstName",
@@ -56,8 +62,9 @@ class Customer {
                 phone,
                 notes
           FROM customers
-          WHERE LOWER(customers.first_name) = LOWER($1)
-          AND LOWER(customers.last_name) = LOWER($2)`, [nameSplit[0], nameSplit[1]]);
+          WHERE customers.first_name ILIKE $1
+          AND customers.last_name ILIKE $2`,
+        [firstName, lastName]);
     }
 
     return results.rows.map(c => new Customer(c));
@@ -89,9 +96,9 @@ class Customer {
   }
 
 
-   /** get top ten customers. */
+  /** get top ten customers. */
 
-  static async getTopTen(){
+  static async getTopTen() {
     console.log('we got here');
     const results = await db.query(
       `SELECT c.id,
