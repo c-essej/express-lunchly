@@ -32,18 +32,18 @@ class Customer {
   }
 
   /** search for customers */
-  //TODO: run one query and concat first and last name
 
   static async search(query) {
-      let name;
+      const name = `%${query}%`;
+      // %al%man%
 
-      if (query.length === 1){
-        name = `%${query}%`;
-      } else if (query.length === 2){
-        let joinOnPercent = query.split(' ').join('%');
-        console.log('****joinOnPercent', joinOnPercent);
-        name = `%${joinOnPercent}%`;
-      }
+      // if (query.length === 1){
+      //   name = `%${query}%`;
+      // } else if (query.length === 2){
+      //   let joinOnPercent = query.split(' ').join('%');
+      //   console.log('****joinOnPercent', joinOnPercent);
+      //   name = `%${joinOnPercent}%`;
+      // }
 
       const results = await db.query(
         `SELECT id,
@@ -52,7 +52,8 @@ class Customer {
                 phone,
                 notes
           FROM customers
-          WHERE CONCAT(customers.first_name, ' ', customers.last_name) ILIKE $1`,
+          WHERE CONCAT(first_name, ' ', last_name) ILIKE $1
+          ORDER BY last_name, first_name`,
         [name]);
 
     return results.rows.map(c => new Customer(c));
@@ -85,7 +86,7 @@ class Customer {
 
 
   /** get top ten customers. */
-//TODO: line 112, give an alias
+
   static async getTopTen() {
     console.log('we got here');
     const results = await db.query(
