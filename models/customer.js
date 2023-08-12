@@ -32,42 +32,28 @@ class Customer {
   }
 
   /** search for customers */
+  //TODO: run one query and concat first and last name
 
   static async search(query) {
-    let results;
+      let name;
 
-    const nameSplit = query.split(" ");
+      if (query.length === 1){
+        name = `%${query}%`;
+      } else if (query.length === 2){
+        let joinOnPercent = query.split(' ').join('%');
+        console.log('****joinOnPercent', joinOnPercent);
+        name = `%${joinOnPercent}%`;
+      }
 
-    if (nameSplit.length === 1) {
-      let name = `%${query}%`;
-
-      results = await db.query(
+      const results = await db.query(
         `SELECT id,
                 first_name AS "firstName",
                 last_name  AS "lastName",
                 phone,
                 notes
           FROM customers
-          WHERE customers.first_name ILIKE $1
-          OR customers.last_name ILIKE $1`,
+          WHERE CONCAT(customers.first_name, ' ', customers.last_name) ILIKE $1`,
         [name]);
-
-    } else if (nameSplit.length === 2) {
-
-      let firstName = `%${nameSplit[0]}%`;
-      let lastName = `%${nameSplit[1]}%`;
-
-      results = await db.query(
-        `SELECT id,
-                first_name AS "firstName",
-                last_name  AS "lastName",
-                phone,
-                notes
-          FROM customers
-          WHERE customers.first_name ILIKE $1
-          AND customers.last_name ILIKE $2`,
-        [firstName, lastName]);
-    }
 
     return results.rows.map(c => new Customer(c));
   }
@@ -99,7 +85,7 @@ class Customer {
 
 
   /** get top ten customers. */
-
+//TODO: line 112, give an alias
   static async getTopTen() {
     console.log('we got here');
     const results = await db.query(
@@ -108,7 +94,7 @@ class Customer {
           c.last_name  AS "lastName",
           c.phone,
           c.notes,
-          COUNT(*)
+          COUNT(*) AS "reservation count"
         FROM customers as c
         JOIN reservations as r
         ON c.id = r.customer_id

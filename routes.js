@@ -15,9 +15,9 @@ const router = new express.Router();
 router.get("/", async function (req, res, next) {
 
   let customers;
+//TODO: DRY
 
-
-  if (req.query.search){
+  if (req.query.search) {
     const query = req.query.search;
     console.log('****req.query.search', query);
     console.log("type is=", (typeof query));
@@ -26,14 +26,13 @@ router.get("/", async function (req, res, next) {
 
     console.log("customers when no customer=", customers);
 
-    return res.render("customer_list.html", { customers });
-
   } else {
 
     customers = await Customer.all();
 
-    return res.render("customer_list.html", { customers });
   }
+
+  return res.render("customer_list.html", { customers });
 
 });
 
@@ -58,7 +57,7 @@ router.post("/add/", async function (req, res, next) {
 
 /** Get list of top ten Customers. */
 
-router.get("/top-ten/", async function(req, res, next){
+router.get("/top-ten/", async function (req, res, next) {
   console.log('we are in topTen');
   const customers = await Customer.getTopTen();
 
@@ -122,8 +121,5 @@ router.post("/:id/add-reservation/", async function (req, res, next) {
 
   return res.redirect(`/${customerId}/`);
 });
-
-
-
 
 module.exports = router;
